@@ -19,12 +19,12 @@ router.post("/", (req, res, next) => {
   // Sanity Check
   if (typeof email === "undefined" || email == "") {
     return res.end(
-      JSON.stringify(response.genericResponse(noContentErrorCode, "Email should not be blank!"))
+      JSON.stringify(response.genericResponse(statusCode.noContentStatusCode, "Email should not be blank!"))
     );
   }
   if (typeof pass === "undefined" || pass == "") {
     return res.end(
-      JSON.stringify(response.genericResponse(noContentErrorCode, "Password should not be blank!"))
+      JSON.stringify(response.genericResponse(statusCode.noContentStatusCode, "Password should not be blank!"))
     );
   }
 

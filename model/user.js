@@ -8,6 +8,8 @@ module.exports = {
         userId: '',
         profile_image: '',
         social_token: '',
+        address: '',
+        date_of_birth: '',
     
         setPhone: function (value) {
             this.phone = value;
@@ -36,6 +38,12 @@ module.exports = {
         setImage: function (image) {
             this.profile_image = image;
         },
+        setAddress: function (value) {
+            this.address = value;
+        },
+        setDateOfBirth: function (value) {
+            this.date_of_birth = value;
+        },
         setUser: function (obj) {
             this.phone = obj.phone;
             this.token = obj.token;
@@ -44,8 +52,10 @@ module.exports = {
             this.password = obj.password;
             this.name = obj.name;
             this.provider = obj.provider;
-            this.userId = obj.userId;
+            this.userId = obj.user_id;
             this.profile_image = obj.profile_image;
+            this.address = obj.address;
+            this.date_of_birth = obj.date_of_birth;
         }
         
     };

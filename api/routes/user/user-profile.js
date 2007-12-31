@@ -1,4 +1,5 @@
 const express = require("express");
+const jwtDecode = require('jwt-decode');
 const router = express.Router();
 const dbconnection = require("../../../db-connection/db-connect");
 const logger = require("../../../logger").Logger;
@@ -8,23 +9,15 @@ const schema = require('../../../schema/db-schema');
 var user = require('../../../model/user');
 var verifyJWTToken = require('../../../utility/jwt-verify');
 var util = require('../../../utility/util');
-const API = "Update Profile API ";
+const API = "User Profile API ";
 
-router.post("/", verifyJWTToken, (req, res, next) => {
-  const API = "Login API ";
+router.get("/", verifyJWTToken, (req, res, next) => {
   res.set("Content-Type", "application/json");
-  console.log("login body::::: " + JSON.stringify(req.body));
-  var email = req.body.email;
-  logger.info(API + "Request user profile email : " + email);
-  // Sanity Check
-  if (typeof email === "undefined" || email == "") {
-    res.end(
-      JSON.stringify(response.genericResponse(statusCode.noContentStatusCode, "Email should not be blank!"))
-    );
-  }
-
+  var token = req.headers.authorization;
+  var userId = jwtDecode(token).user_id;
+  //console.log(userId);
   // Sanity Check End
-  var query = "SELECT * FROM "+schema.userTable+" WHERE email = '" + email + "'" ;
+  var query = "SELECT * FROM "+schema.userTable+" WHERE user_id = '" + userId + "'" ;
   // logger.info(API + "login query : " + query);
   //console.log("query::::: " + query);
   dbconnection.query(query, function (err, result, fields) {
@@ -46,40 +39,28 @@ router.post("/", verifyJWTToken, (req, res, next) => {
   });
 });
 
-/* postman url for the below route is {{appEnvLocal}}/getUserProfile/editProfile  */
+/* postman url for the below route is {{appEnvLocal}}/userProfile/editProfile  */
 
-router.post("/editProfile", verifyJWTToken, (req, res, next) => {
+router.patch("/editProfile", verifyJWTToken, (req, res, next) => {
   res.set("Content-Type", "application/json");
   console.log("login body::::: " + JSON.stringify(req.body));
-  var email = util.replaceUndefined(req.body.email);
-  var password = util.replaceUndefined(req.body.password);
-  var profile_image = util.replaceUndefined(req.body.profile_image);
-  var name = util.replaceUndefined(req.body.name);
-  var date_of_birth = util.replaceUndefined(req.body.date_of_birth);
-  var address = util.replaceUndefined(req.body.address);
 
-  logger.info(API + "Request user profile email : " + email);
-  // Sanity Check
-  if (typeof email === "undefined" || email == "") {
-    return res.end(
-      JSON.stringify(response.genericResponse(statusCode.noContentStatusCode, "Email should not be blank!"))
-    );
+  var fields_format = "";
+  var token = req.headers.authorization;
+  var userId = jwtDecode(token).user_id;
+
+  // retrieval of request body keys and values
+  for (var key in req.body) {
+    if (req.body.hasOwnProperty(key)) {
+      fields_format = fields_format + " "+key+" = " + "'" + req.body[key] + "'" + ",";
+    }
   }
 
-  if (typeof password === "undefined" || password == "") {
-    return res.end(
-      JSON.stringify(response.genericResponse(statusCode.noContentStatusCode, "Email should not be blank!"))
-    );
-  }
+  // chop off last character from fields_format string
+  fields_format = fields_format.substring(0, fields_format.length - 1);
 
   // Sanity Check End
-  var query = "UPDATE `"+schema.dbName+"`.`"+schema.userTable+"` SET "
-    + "`password` = " + "'" + password + "'" + ", "
-    + "`profile_image` = " + "'" + profile_image + "'" + ", "
-    + "`name` = " + "'" + name + "'" + ", "
-    + "`date_of_birth` = " + "'" + date_of_birth + "'" + ", "
-    + "`address` = " + "'" + address + "'"
-    + " WHERE (`email` = " + "'" + email + "'" + ");";
+  var query = "UPDATE `"+schema.dbName+"`.`"+schema.userTable+"` SET "+fields_format+" WHERE (`user_id` = " + "'" + userId + "'" + ");";
 
   console.log('Update Profile ::::: ' + query);
 

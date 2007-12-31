@@ -1,3 +1,0 @@
-2018-09-14T16:03:26.031Z : Update Profile API Request user profile email : 
-2018-09-14T16:04:21.600Z : Update Profile API Request user profile email : mailhannan0@gmail.com
-2018-09-14T16:05:15.105Z : Update Profile API Request user profile email : mailhannan0@gmail.com

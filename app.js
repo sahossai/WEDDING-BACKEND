@@ -9,10 +9,11 @@ const loginRoutes = require("./api/routes/authentication/login");
 const registerRoutes = require("./api/routes/authentication/register");
 const userProfileRoutes = require("./api/routes/user/user-profile");
 const updateProfileRoutes = require("./api/routes/user/update-profile");
-
+const multipart = require('connect-multiparty');
+app.use(multipart());
 app.use('/login', loginRoutes);
 app.use('/register', registerRoutes);
-app.use('/getUserProfile', userProfileRoutes);
+app.use('/userProfile', userProfileRoutes);
 app.use('/updateProfile', updateProfileRoutes);
 /**
  * Error Handling
