@@ -1,0 +1,32 @@
+{
+  "name": "true-love-backend",
+  "version": "1.0.0",
+  "description": "Appmm scorecard backend is used to upload score card into the Data Base",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.13.3",
+    "jsonwebtoken": "^8.2.2",
+    "mysql": "^2.15.0"
+  },
+  "engines": {
+    "node": "8.9.4"
+  },
+  "repository": {
+    "type": "",
+    "url": ""
+  },
+  "keywords": [
+    "node",
+    "express"
+  ],
+  "author": "Sk Ahmed Hossain",
+  "contributors": [],
+  "license": "MIT",
+  "devDependencies": {
+    "nodemon": "^1.17.4"
+  }
+}
