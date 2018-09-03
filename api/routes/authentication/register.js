@@ -33,7 +33,7 @@ router.post("/", (req, res, next) => {
     }
 
 
-    var query = "INSERT INTO `true_love`.`user` (`email`, `user_id`, `password`, `profile_image`, `name`, `date_of_birth`, `address`, `provider`, `token`) VALUES ("
+    var query = "INSERT INTO `true_love`.`user` (`email`, `user_id`, `password`, `profile_image`, `name`, `date_of_birth`, `address`, `provider`, `social_token`) VALUES ("
         + "'" + email + "'" + ","
         + "'" + user_id + "'" + ","
         + "'" + password + "'" + ","
@@ -58,9 +58,23 @@ router.post("/", (req, res, next) => {
         }
         if (result && result.affectedRows > 0) {
             console.log("********** User Data insert successfully ***********");
-            res.end(
-                JSON.stringify(response.genericResponse(successCode, "Registration Successfully done!"))
-            );
+            // res.end(
+            //     JSON.stringify(response.genericResponse(successCode, "Registration Successfully done!"))
+            // );
+            var query = "SELECT * FROM user WHERE email = '" + email + "'";
+            dbconnection.query(query, function (err, result, fields) {
+                if (err) {
+                    logger.error(API + " DB Fetch Error: " + JSON.stringify(err));
+                    res.end(JSON.stringify(response.genericResponse(dbInsertErrorCode, "An error occured while fetching into DB!")));
+                }
+                if (result && result.affectedRows > 0) {
+                    res.end(
+                        JSON.stringify(genericResponse(successCode,"Login Success!", getUser(result, token)))
+                      );
+                }
+            }
+
+
         }
     });
 

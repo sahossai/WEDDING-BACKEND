@@ -8,4 +8,5 @@ CREATE TABLE `true_love`.`user` (
         `address` VARCHAR(200) NULL,
         `provider` VARCHAR(100) NULL,
         `token` VARCHAR(400) NULL,
+        `social_token` VARCHAR(400) NULL,
         PRIMARY KEY (`email`));

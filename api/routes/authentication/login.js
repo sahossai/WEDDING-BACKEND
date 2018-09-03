@@ -11,9 +11,8 @@ const JWT_TOKEN_SECRET_KEY = "true_love_&*!";
 
 router.post("/", (req, res, next) => {
   const API = "Login API ";
-    //console.log('method ::::::: ' + req.method);
     res.set("Content-Type", "application/json");
-    console.log("login body::::: " + JSON.stringify(req.body));
+    // console.log("login body::::: " + JSON.stringify(req.body));
     var email = req.body.email;
     var pass = req.body.password;
     logger.info(API + "Request Login email : " + email);
@@ -33,11 +32,9 @@ router.post("/", (req, res, next) => {
 
     // Sanity Check End
     var query = "SELECT * FROM user WHERE email = '" + email + "'" + " AND password = '" + pass + "'";
+    // logger.info(API + "login query : " + query);
     //console.log("query::::: " + query);
       dbconnection.query(query, function (err, result, fields) {
-        //console.log('query result ===== ' + JSON.stringify(result));
-        //console.log('query result ===== ' + JSON.stringify(result));
-        //console.log('query err ===== ' + JSON.stringify(err));
         if (err){
           logger.error(API + " DB Insert Error: " + JSON.stringify(err));
           res.end(
@@ -48,7 +45,6 @@ router.post("/", (req, res, next) => {
           jwt.sign({email: email}, JWT_TOKEN_SECRET_KEY, { expiresIn: '1h' }, (error, token) => {
             if(error){
               logger.error(API + " JWT Token Generate Error: " + JSON.stringify(error));
-              console.log('JWT Token Generate Error :::' + JSON.stringify(error));
               res.end(
                 JSON.stringify(genericResponse(noContentErrorCode,"Unable to create JWT Token!"))
               );
