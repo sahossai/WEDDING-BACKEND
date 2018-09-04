@@ -3,17 +3,18 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 const dbconnection = require("../../../db-connection/db-connect");
 const response = require("../../../response/success");
+const statusCode = require("../../../response/status-code");
 const logger = require("../../../logger").Logger;
+const JWT_TOKEN_SECRET_KEY = "true_love_&*!";
+var user = require('../../../model/user');
 
-const dbInsertErrorCode = 400;
-const noContentErrorCode = 204;
-const successCode = 200;
+
 
 router.post("/", (req, res, next) => {
     const API = "Registration API ";
     //router.post("/",verifyToken,(req, res, next) => {
     res.set("Content-Type", "application/json");
-    console.log('Registration informations :::' + JSON.stringify(req.body));
+    // console.log('Registration informations :::' + JSON.stringify(req.body));
     logger.info(API + "Request Registration informations : " + JSON.stringify(req.body));
     var email = replaceUndefined(req.body.email);
     var user_id = replaceUndefined(req.body.userId);
@@ -24,14 +25,28 @@ router.post("/", (req, res, next) => {
     var address = replaceUndefined(req.body.address);
     var provider = replaceUndefined(req.body.provider);
     var token = replaceUndefined(req.body.token);
-    //console.log('email :::' + email);
 
     if (typeof email === "undefined" || email == "") {
         res.end(
-            JSON.stringify(response.genericResponse(noContentErrorCode, "Email should not be blank!"))
+            JSON.stringify(response.genericResponse(statusCode.noContentStatusCode, "Email should not be blank!"))
         );
     }
 
+    //Check if User Already Exist
+    var query = "SELECT * FROM user WHERE email = '" + email + "'" ;
+    dbconnection.query(query, function (err, result, fields) {
+        if (err){
+          logger.error(API + " DB Insert Error: " + JSON.stringify(err));
+          res.end(
+            JSON.stringify(response.genericResponse(statusCode.dbFetchErrorCode, "An error occured. Please try again later."))
+          );
+        }
+        if(result && result.length > 0){
+            res.end(
+                JSON.stringify(response.genericResponse(statusCode.noContentStatusCode, "User Already exist!"))
+            );
+        } 
+      });
 
     var query = "INSERT INTO `true_love`.`user` (`email`, `user_id`, `password`, `profile_image`, `name`, `date_of_birth`, `address`, `provider`, `social_token`) VALUES ("
         + "'" + email + "'" + ","
@@ -43,38 +58,50 @@ router.post("/", (req, res, next) => {
         + "'" + address + "'" + ","
         + "'" + provider + "'" + ","
         + "'" + token + "'" + ");";
-    console.log('QUERY ===== ' + query);
-
-    //res.end(JSON.stringify(response.genericResponse(successCode, query)));
-
-
+    // console.log('QUERY ===== ' + query);
     dbconnection.query(query, function (err, result, fields) {
         // console.log('query result ===== ' + JSON.stringify(result));
         // console.log('query err ===== ' + JSON.stringify(err));
         if (err) {
             logger.error(API + " DB Insert Error: " + JSON.stringify(err));
             console.log("DB Insert Error::::: " + JSON.stringify(err));
-            res.end(JSON.stringify(response.genericResponse(dbInsertErrorCode, "An error occured while inserting into DB!")));
+            res.end(JSON.stringify(response.genericResponse(statusCode.dbInsertErrorCode, "An error occured while inserting into DB!")));
         }
         if (result && result.affectedRows > 0) {
             console.log("********** User Data insert successfully ***********");
-            // res.end(
-            //     JSON.stringify(response.genericResponse(successCode, "Registration Successfully done!"))
-            // );
             var query = "SELECT * FROM user WHERE email = '" + email + "'";
             dbconnection.query(query, function (err, result, fields) {
+            console.log("After reg result::::: " + JSON.stringify(result));
+
                 if (err) {
                     logger.error(API + " DB Fetch Error: " + JSON.stringify(err));
-                    res.end(JSON.stringify(response.genericResponse(dbInsertErrorCode, "An error occured while fetching into DB!")));
+                    res.end(JSON.stringify(response.genericResponse(statusCode.dbInsertErrorCode, "An error occured while fetching into DB!")));
                 }
-                if (result && result.affectedRows > 0) {
+                if (result && result.length > 0) {
+                    // res.end(
+                    //     JSON.stringify(genericResponse(statusCode.successStatusCode,"Login Success!", getUser(result, token)))
+                    // );
+                    jwt.sign({email: email}, JWT_TOKEN_SECRET_KEY, { expiresIn: '1h' }, (error, token) => {
+            console.log("JWT Error::::: " + JSON.stringify(error));
+            console.log("JWT Token::::: " + token);
+                        if(error){
+                          logger.error(API + " JWT Token Generate Error: " + JSON.stringify(error));
+                          res.end(
+                            JSON.stringify(response.genericResponse(statusCode.noContentStatusCode,"Unable to create JWT Token!"))
+                          );
+                        } else {
+                          res.end(
+                            JSON.stringify(response.genericResponse(statusCode.successStatusCode,"Registration Success!", getUser(result, token)))
+                          );
+                        }
+                      });
+                }else {
+                    //Need to delete user data from User Table
                     res.end(
-                        JSON.stringify(genericResponse(successCode,"Login Success!", getUser(result, token)))
-                      );
+                      JSON.stringify(response.genericResponse(statusCode.noContentStatusCode, "User does not exist!"))
+                    );
                 }
-            }
-
-
+            });
         }
     });
 
@@ -164,8 +191,14 @@ function replaceUndefined(value) {
         console.log(value + ' is undefined');
         value = '';
     }
-
     return value;
+}
+
+function getUser(result, token) {
+    user.setUser(result[0]);
+    user.setToken('Bearer ' + token);
+    console.log('Reg User = ' + JSON.stringify(user));
+    return user;
 }
 
 module.exports = router;

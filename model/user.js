@@ -9,48 +9,44 @@ module.exports = {
         profile_image: '',
         social_token: '',
     
-        function setPhone(phone) {
-            this.user.phone = phone;
+        setPhone: function (value) {
+            this.phone = value;
         },    
-        function setToken(token) {
-            this.user.token = token;
+        setToken: function (value) {
+            this.token = value;
         },
-        function setSocialToken(token) {
-            this.user.social_token = token;
+        setSocialToken: function (value) {
+            this.social_token = value;
         },
-        function setEmail(email) {
-            this.user.email = email;
+        setEmail: function (value) {
+            this.email = value;
         },
-        function setPassword(pass) {
-            this.user.password = pass;
+        setPassword: function (value) {
+            this.password = value;
         },
-        function setName(name) {
-            this.user.name = name;
+        setName: function (value) {
+            this.name = value;
         },
-        function setProvider(provider) {
-            this.user.provider = provider;
+        setProvider: function (providerName) {
+            this.provider = providerName;
         },
-        function setUserId(userId) {
-            this.user.userId = userId;
+        setUserId: function (id) {
+            this.userId = id;
         },
-        function setImage(image) {
-            this.user.profile_image = image;
+        setImage: function (image) {
+            this.profile_image = image;
         },
-        function setUser(obj) {
-            this.user.phone = obj.phone;
-            this.user.token = obj.token;
-            this.user.social_token = obj.social_token;
-            this.user.email = obj.email;
-            this.user.password = obj.password;
-            this.user.name = obj.name;
-            this.user.provider = obj.provider;
-            this.user.userId = obj.userId;
-            this.user.profile_image = obj.profile_image;
-
-        },
-
-        function getUser() {
-            return 
+        setUser: function (obj) {
+            this.phone = obj.phone;
+            this.token = obj.token;
+            this.social_token = obj.social_token;
+            this.email = obj.email;
+            this.password = obj.password;
+            this.name = obj.name;
+            this.provider = obj.provider;
+            this.userId = obj.userId;
+            this.profile_image = obj.profile_image;
         }
+        
     };
     

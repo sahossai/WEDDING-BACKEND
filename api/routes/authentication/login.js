@@ -3,10 +3,9 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 const dbconnection = require("../../../db-connection/db-connect");
 const logger = require("../../../logger").Logger;
-const dbFetchErrorCode = 400;
-const noContentErrorCode = 204;
-const successCode = 200;
-
+const response = require("../../../response/success");
+const statusCode = require("../../../response/status-code");
+var user = require('../../../model/user');
 const JWT_TOKEN_SECRET_KEY = "true_love_&*!";
 
 router.post("/", (req, res, next) => {
@@ -16,16 +15,15 @@ router.post("/", (req, res, next) => {
     var email = req.body.email;
     var pass = req.body.password;
     logger.info(API + "Request Login email : " + email);
-
     // Sanity Check
     if (typeof email === "undefined" || email == "") {
         res.end(
-            JSON.stringify(genericResponse(noContentErrorCode, "Email should not be blank!"))
+            JSON.stringify(response.genericResponse(noContentErrorCode, "Email should not be blank!"))
         );
     }
     if (typeof pass === "undefined" || pass == "") {
         res.end(
-            JSON.stringify(genericResponse(noContentErrorCode, "Password should not be blank!"))
+            JSON.stringify(response.genericResponse(noContentErrorCode, "Password should not be blank!"))
         );
     }
 
@@ -38,7 +36,7 @@ router.post("/", (req, res, next) => {
         if (err){
           logger.error(API + " DB Insert Error: " + JSON.stringify(err));
           res.end(
-            JSON.stringify(genericResponse(dbFetchErrorCode, "An error occured. Please try again later."))
+            JSON.stringify(response.genericResponse(statusCode.dbFetchErrorCode, "An error occured. Please try again later."))
           );
         }
         if(result && result.length > 0){
@@ -46,17 +44,17 @@ router.post("/", (req, res, next) => {
             if(error){
               logger.error(API + " JWT Token Generate Error: " + JSON.stringify(error));
               res.end(
-                JSON.stringify(genericResponse(noContentErrorCode,"Unable to create JWT Token!"))
+                JSON.stringify(response.genericResponse(statusCode.noContentStatusCode,"Unable to create JWT Token!"))
               );
             } else {
               res.end(
-                JSON.stringify(genericResponse(successCode,"Login Success!", getUser(result, token)))
+                JSON.stringify(response.genericResponse(statusCode.successStatusCode,"Login Success!", getUser(result, token)))
               );
             }
           });
         }else {
           res.end(
-            JSON.stringify(genericResponse(noContentErrorCode, "User does not exist!"))
+            JSON.stringify(response.genericResponse(statusCode.noContentStatusCode, "User does not exist!"))
           );
         }
       });
@@ -64,26 +62,8 @@ router.post("/", (req, res, next) => {
 
 
 function getUser(result, token) {
-    return {
-        email: result[0].email,
-        userId: result[0].user_id,
-        name: result[0].name,
-        profile_image: result[0].profile_image,
-        token: 'Bearer ' + token
-    };
+    user.setUser(result[0]);
+    user.setToken('Bearer ' + token);
+    return user;
 }
-
-/**
- * Create generic function to generate response
- * @param {*} errorCode 
- * @param {*} errorMessage 
- */
-function genericResponse(errorCode, errorMessage, response) {
-    return {
-        code: errorCode,
-        message: errorMessage,
-        response: response
-    };
-}
-
 module.exports = router;

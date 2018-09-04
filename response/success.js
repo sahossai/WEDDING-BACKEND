@@ -10,4 +10,4 @@ module.exports.genericResponse = function genericResponse(errorCode, errorMessag
       message: errorMessage,
       response: response
     };
-  };
+};
