@@ -14,7 +14,7 @@ router.post("/", (req, res, next) => {
     const API = "Registration API ";
     //router.post("/",verifyToken,(req, res, next) => {
     res.set("Content-Type", "application/json");
-    // console.log('Registration informations :::' + JSON.stringify(req.body));
+    console.log('Registration informations :::' + JSON.stringify(req.body));
     logger.info(API + "Request Registration informations : " + JSON.stringify(req.body));
     var email = replaceUndefined(req.body.email);
     var user_id = replaceUndefined(req.body.userId);
@@ -25,6 +25,8 @@ router.post("/", (req, res, next) => {
     var address = replaceUndefined(req.body.address);
     var provider = replaceUndefined(req.body.provider);
     var token = replaceUndefined(req.body.token);
+    var token = replaceUndefined(req.body.token);
+
 
     if (typeof email === "undefined" || email == "") {
         res.end(
@@ -32,22 +34,20 @@ router.post("/", (req, res, next) => {
         );
     }
 
-    //Check if User Already Exist
-    var query = "SELECT * FROM user WHERE email = '" + email + "'" ;
-    dbconnection.query(query, function (err, result, fields) {
-        if (err){
-          logger.error(API + " DB Insert Error: " + JSON.stringify(err));
-          res.end(
-            JSON.stringify(response.genericResponse(statusCode.dbFetchErrorCode, "An error occured. Please try again later."))
-          );
-        }
-        if(result && result.length > 0){
-            res.end(
-                JSON.stringify(response.genericResponse(statusCode.noContentStatusCode, "User Already exist!"))
-            );
-        } 
-      });
+    //If not social login
+    if (provider == 'normal' || provider == '') {
+        //Check if User Already Exist
+        checkIfUserAlreadyExist(email, status => {
+            if (status) {//User Already exist
+                res.end(
+                    JSON.stringify(response.genericResponse(statusCode.alreadyExistStatusCode, "User Already Registered."))
+                );
+            }
+        });
+    }
 
+
+    //Insert or Update user data into the database
     var query = "INSERT INTO `true_love`.`user` (`email`, `user_id`, `password`, `profile_image`, `name`, `date_of_birth`, `address`, `provider`, `social_token`) VALUES ("
         + "'" + email + "'" + ","
         + "'" + user_id + "'" + ","
@@ -58,52 +58,74 @@ router.post("/", (req, res, next) => {
         + "'" + address + "'" + ","
         + "'" + provider + "'" + ","
         + "'" + token + "'" + ");";
-    // console.log('QUERY ===== ' + query);
-    dbconnection.query(query, function (err, result, fields) {
-        // console.log('query result ===== ' + JSON.stringify(result));
-        // console.log('query err ===== ' + JSON.stringify(err));
-        if (err) {
-            logger.error(API + " DB Insert Error: " + JSON.stringify(err));
-            console.log("DB Insert Error::::: " + JSON.stringify(err));
-            res.end(JSON.stringify(response.genericResponse(statusCode.dbInsertErrorCode, "An error occured while inserting into DB!")));
-        }
-        if (result && result.affectedRows > 0) {
-            console.log("********** User Data insert successfully ***********");
-            var query = "SELECT * FROM user WHERE email = '" + email + "'";
-            dbconnection.query(query, function (err, result, fields) {
-            console.log("After reg result::::: " + JSON.stringify(result));
 
-                if (err) {
-                    logger.error(API + " DB Fetch Error: " + JSON.stringify(err));
-                    res.end(JSON.stringify(response.genericResponse(statusCode.dbInsertErrorCode, "An error occured while fetching into DB!")));
-                }
-                if (result && result.length > 0) {
-                    // res.end(
-                    //     JSON.stringify(genericResponse(statusCode.successStatusCode,"Login Success!", getUser(result, token)))
-                    // );
-                    jwt.sign({email: email}, JWT_TOKEN_SECRET_KEY, { expiresIn: '1h' }, (error, token) => {
-            console.log("JWT Error::::: " + JSON.stringify(error));
-            console.log("JWT Token::::: " + token);
-                        if(error){
-                          logger.error(API + " JWT Token Generate Error: " + JSON.stringify(error));
-                          res.end(
-                            JSON.stringify(response.genericResponse(statusCode.noContentStatusCode,"Unable to create JWT Token!"))
-                          );
-                        } else {
-                          res.end(
-                            JSON.stringify(response.genericResponse(statusCode.successStatusCode,"Registration Success!", getUser(result, token)))
-                          );
-                        }
-                      });
-                }else {
-                    //Need to delete user data from User Table
-                    res.end(
-                      JSON.stringify(response.genericResponse(statusCode.noContentStatusCode, "User does not exist!"))
-                    );
-                }
-            });
+    //UPDATE CUSTOMERS SET ADDRESS = 'Pune' WHERE ID = 6;
+    //UPDATE `true_love`.`user` SET `password` = '1234', `date_of_birth` = NULL WHERE (`email` = 'skahmedhossain@gmail.com');
+
+
+    //if (provider != 'normal') {
+    checkIfUserAlreadyExist(email, status => {
+        console.log('User status ====== :::::::::: ' + status);
+        if (status) {
+            query = "UPDATE `true_love`.`user` SET "
+                + "`user_id` = " + "'" + user_id + "'" + ", "
+                + "`password` = " + "'" + password + "'" + ", "
+                + "`profile_image` = " + "'" + profile_image + "'" + ", "
+                + "`name` = " + "'" + name + "'" + ", "
+                + "`date_of_birth` = " + "'" + date_of_birth + "'" + ", "
+                + "`address` = " + "'" + address + "'" + ", "
+                + "`provider` = " + "'" + provider + "'" + ", "
+                + "`social_token` = " + "'" + token + "'"
+                + " WHERE (`email` = " + "'" + email + "'" + ");";
         }
+        console.log('QUERY ?????? ' + query);
+        dbconnection.query(query, function (err, result, fields) {
+            // console.log('query result ===== ' + JSON.stringify(result));
+            // console.log('query err ===== ' + JSON.stringify(err));
+            if (err) {
+                logger.error(API + " DB Insert Error: " + JSON.stringify(err));
+                console.log("DB Insert Error::::: " + JSON.stringify(err));
+                res.end(JSON.stringify(response.genericResponse(statusCode.dbInsertErrorCode, "An error occured while inserting into DB!")));
+            }
+            if (result && result.affectedRows > 0) {
+                console.log("********** User Data insert successfully ***********");
+                var query = "SELECT * FROM user WHERE email = '" + email + "'";
+                dbconnection.query(query, function (err, result, fields) {
+                    console.log("After reg result::::: " + JSON.stringify(result));
+
+                    if (err) {
+                        logger.error(API + " DB Fetch Error: " + JSON.stringify(err));
+                        res.end(JSON.stringify(response.genericResponse(statusCode.dbInsertErrorCode, "An error occured while fetching into DB!")));
+                    }
+                    if (result && result.length > 0) {
+                        jwt.sign({ email: email }, JWT_TOKEN_SECRET_KEY, { expiresIn: '1h' }, (error, token) => {
+                            console.log("JWT Error::::: " + JSON.stringify(error));
+                            console.log("JWT Token::::: " + token);
+                            if (error) {
+                                logger.error(API + " JWT Token Generate Error: " + JSON.stringify(error));
+                                res.end(
+                                    JSON.stringify(response.genericResponse(statusCode.noContentStatusCode, "Unable to create JWT Token!"))
+                                );
+                            } else {
+                                res.end(
+                                    JSON.stringify(response.genericResponse(statusCode.successStatusCode, "Registration Success!", getUser(result, token)))
+                                );
+                            }
+                        });
+                    } else {
+                        //Need to delete user data from User Table
+                        res.end(
+                            JSON.stringify(response.genericResponse(statusCode.noContentStatusCode, "User does not exist!"))
+                        );
+                    }
+                });
+            }
+        });
+
     });
+    //}
+
+
 
 
 
@@ -176,7 +198,7 @@ function verifyToken(req, res, next) {
     } else {
         res.end(
             JSON.stringify({
-                code: 403,
+                code: 401,
                 message: 'invalid token'
             })
         );
@@ -188,17 +210,37 @@ function verifyToken(req, res, next) {
  */
 function replaceUndefined(value) {
     if (typeof value == 'undefined') {
-        console.log(value + ' is undefined');
+        //console.log(value + ' is undefined');
         value = '';
     }
     return value;
 }
 
+/**
+ * Get User Model
+ * @param {*} result 
+ * @param {*} token 
+ */
 function getUser(result, token) {
     user.setUser(result[0]);
     user.setToken('Bearer ' + token);
     console.log('Reg User = ' + JSON.stringify(user));
     return user;
 }
+
+function checkIfUserAlreadyExist(email, callback) {
+    var query = "SELECT * FROM user WHERE email = '" + email + "'";
+    dbconnection.query(query, function (err, result, fields) {
+        if (err) {
+            console.log(API + " DB Fetch Error: " + JSON.stringify(err));
+            logger.error(API + " DB Fetch Error: " + JSON.stringify(err));
+            callback(false);
+        }
+        if (result && result.length > 0) {
+            callback(true);
+        }
+    });
+}
+
 
 module.exports = router;
