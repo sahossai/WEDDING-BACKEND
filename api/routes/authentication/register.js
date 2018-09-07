@@ -5,8 +5,8 @@ const dbconnection = require("../../../db-connection/db-connect");
 const response = require("../../../response/success");
 const statusCode = require("../../../response/status-code");
 const logger = require("../../../logger").Logger;
-const JWT_TOKEN_SECRET_KEY = "true_love_&*!";
 var user = require('../../../model/user');
+var utility = require('../../../utility/jwt-signin');
 
 
 
@@ -62,11 +62,10 @@ router.post("/", (req, res, next) => {
     //UPDATE CUSTOMERS SET ADDRESS = 'Pune' WHERE ID = 6;
     //UPDATE `true_love`.`user` SET `password` = '1234', `date_of_birth` = NULL WHERE (`email` = 'skahmedhossain@gmail.com');
 
-
     //if (provider != 'normal') {
     checkIfUserAlreadyExist(email, status => {
         console.log('User status ====== :::::::::: ' + status);
-        if (status) {
+        if (status) {//User Already Registered. Update old data with new data.
             query = "UPDATE `true_love`.`user` SET "
                 + "`user_id` = " + "'" + user_id + "'" + ", "
                 + "`password` = " + "'" + password + "'" + ", "
@@ -91,27 +90,22 @@ router.post("/", (req, res, next) => {
                 console.log("********** User Data insert successfully ***********");
                 var query = "SELECT * FROM user WHERE email = '" + email + "'";
                 dbconnection.query(query, function (err, result, fields) {
-                    console.log("After reg result::::: " + JSON.stringify(result));
-
                     if (err) {
                         logger.error(API + " DB Fetch Error: " + JSON.stringify(err));
                         res.end(JSON.stringify(response.genericResponse(statusCode.dbInsertErrorCode, "An error occured while fetching into DB!")));
                     }
                     if (result && result.length > 0) {
-                        jwt.sign({ email: email }, JWT_TOKEN_SECRET_KEY, { expiresIn: '1h' }, (error, token) => {
-                            console.log("JWT Error::::: " + JSON.stringify(error));
-                            console.log("JWT Token::::: " + token);
-                            if (error) {
-                                logger.error(API + " JWT Token Generate Error: " + JSON.stringify(error));
-                                res.end(
-                                    JSON.stringify(response.genericResponse(statusCode.noContentStatusCode, "Unable to create JWT Token!"))
-                                );
+                        utility.createJWTToken({ email: email }, (isSuccess, token) => {
+                            if (isSuccess) {
+                                  res.end(
+                                    JSON.stringify(response.genericResponse(statusCode.successStatusCode,"Registration Success!", getUser(result, token)))
+                                  );
                             } else {
-                                res.end(
-                                    JSON.stringify(response.genericResponse(statusCode.successStatusCode, "Registration Success!", getUser(result, token)))
-                                );
+                              res.end(
+                                JSON.stringify(response.genericResponse(statusCode.noContentStatusCode, "Unable to create JWT Token!", getUser(result, token)))
+                              );
                             }
-                        });
+                          });
                     } else {
                         //Need to delete user data from User Table
                         res.end(

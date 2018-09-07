@@ -5,9 +5,11 @@ app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support URL encoded bodies
 const loginRoutes = require("./api/routes/authentication/login");
 const registerRoutes = require("./api/routes/authentication/register");
+const userProfileRoutes = require("./api/routes/user/user-profile");
 const dbconnection = require("./db-connection/db-connect");
 app.use('/login', loginRoutes);
 app.use('/register', registerRoutes);
+app.use('/getUserProfile', userProfileRoutes);
 /**
  * Error Handling
  */
