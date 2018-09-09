@@ -2,10 +2,10 @@ const jwt = require("jsonwebtoken");
 const JWT_TOKEN_SECRET_KEY = "true_love_&*!";
 const logger = require("../logger").Logger;
 
-module.exports = function verifyJWTToken() {
-    return function (req, res, next) {
+module.exports = function verifyJWTToken(req, res, next) {
+    //return function (req, res, next) {
         isAuthenticatedUser = false;
-        console.log(" rcv token: " + req.body.token);
+        console.log(" rcv body: " + JSON.stringify(req.body));
 
         jwt.verify(req.token, JWT_TOKEN_SECRET_KEY, function (error, decoded) {
             if (error) {
@@ -22,5 +22,5 @@ module.exports = function verifyJWTToken() {
         } else {
            
         }
-    }
+    //}
 }
