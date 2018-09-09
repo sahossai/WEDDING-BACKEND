@@ -9,7 +9,7 @@ module.exports = {
               callback(false);
             } 
             // console.log('generate token ::::: ' + token);
-            callback(true, token);
+            callback(true,"Bearer " + token);
         });
     }
 };

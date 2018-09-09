@@ -62,7 +62,7 @@ router.post("/", (req, res, next) => {
 
 function getUser(result, token) {
   user.setUser(result[0]);
-  user.setToken('Bearer ' + token);
+  user.setToken(token);
   return user;
 }
 module.exports = router;

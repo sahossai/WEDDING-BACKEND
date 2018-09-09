@@ -161,7 +161,7 @@ function replaceUndefined(value) {
  */
 function getUser(result, token) {
     user.setUser(result[0]);
-    user.setToken('Bearer ' + token);
+    user.setToken(token);
     return user;
 }
 
