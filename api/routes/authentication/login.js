@@ -17,18 +17,16 @@ router.post("/", (req, res, next) => {
   logger.info(API + "Request Login email : " + email);
   // Sanity Check
   if (typeof email === "undefined" || email == "") {
-    res.end(
+    return res.end(
       JSON.stringify(response.genericResponse(noContentErrorCode, "Email should not be blank!"))
     );
   }
   if (typeof pass === "undefined" || pass == "") {
-    res.end(
+    return res.end(
       JSON.stringify(response.genericResponse(noContentErrorCode, "Password should not be blank!"))
     );
   }
 
-
-  // Sanity Check End
   var query = "SELECT * FROM user WHERE email = '" + email + "'" + " AND password = '" + pass + "'";
   // logger.info(API + "login query : " + query);
   //console.log("query::::: " + query);

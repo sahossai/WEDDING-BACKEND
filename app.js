@@ -3,13 +3,17 @@ var app = express();
 const bodyParser = require("body-parser");
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support URL encoded bodies
+const dbconnection = require("./db-connection/db-connect");
+
 const loginRoutes = require("./api/routes/authentication/login");
 const registerRoutes = require("./api/routes/authentication/register");
 const userProfileRoutes = require("./api/routes/user/user-profile");
-const dbconnection = require("./db-connection/db-connect");
+const updateProfileRoutes = require("./api/routes/user/update-profile");
+
 app.use('/login', loginRoutes);
 app.use('/register', registerRoutes);
 app.use('/getUserProfile', userProfileRoutes);
+app.use('/updateProfile', updateProfileRoutes);
 /**
  * Error Handling
  */

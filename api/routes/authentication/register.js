@@ -7,22 +7,23 @@ const statusCode = require("../../../response/status-code");
 const logger = require("../../../logger").Logger;
 var user = require('../../../model/user');
 var utility = require('../../../utility/jwt-signin');
+var util = require('../../../utility/util');
+const API = "Registration API ";
 
 router.post("/", (req, res, next) => {
-    const API = "Registration API ";
     //router.post("/",verifyToken,(req, res, next) => {
     res.set("Content-Type", "application/json");
     console.log('Registration informations :::' + JSON.stringify(req.body));
     logger.info(API + "Request Registration informations : " + JSON.stringify(req.body));
-    var email = replaceUndefined(req.body.email);
-    var user_id = replaceUndefined(req.body.userId);
-    var password = replaceUndefined(req.body.password);
-    var profile_image = replaceUndefined(req.body.profile_image);
-    var name = replaceUndefined(req.body.name);
-    var date_of_birth = replaceUndefined(req.body.date_of_birth);
-    var address = replaceUndefined(req.body.address);
-    var provider = replaceUndefined(req.body.provider);
-    var token = replaceUndefined(req.body.token);
+    var email = util.replaceUndefined(req.body.email);
+    var user_id = util.replaceUndefined(req.body.userId);
+    var password = util.replaceUndefined(req.body.password);
+    var profile_image = util.replaceUndefined(req.body.profile_image);
+    var name = util.replaceUndefined(req.body.name);
+    var date_of_birth = util.replaceUndefined(req.body.date_of_birth);
+    var address = util.replaceUndefined(req.body.address);
+    var provider = util.replaceUndefined(req.body.provider);
+    var token = util.replaceUndefined(req.body.token);
 
 
     if (typeof email === "undefined" || email == "") {
@@ -142,17 +143,6 @@ function verifyToken(req, res, next) {
         );
     }
 };
-
-/*****
- * Replace Undefined values with empty string.
- */
-function replaceUndefined(value) {
-    if (typeof value == 'undefined') {
-        //console.log(value + ' is undefined');
-        value = '';
-    }
-    return value;
-}
 
 /**
  * Get User Model
