@@ -1,6 +1,6 @@
 CREATE TABLE `true_love`.`user` (
-        `email` VARCHAR(100) NOT NULL,
-        `user_id` VARCHAR(100) NULL,
+        `user_id` VARCHAR(100) NOT NULL,
+        `email` VARCHAR(100) NULL,
         `password` VARCHAR(200) NULL,
         `profile_image` VARCHAR(200) NULL,
         `name` VARCHAR(200) NULL,
@@ -9,4 +9,4 @@ CREATE TABLE `true_love`.`user` (
         `provider` VARCHAR(100) NULL,
         `token` VARCHAR(400) NULL,
         `social_token` VARCHAR(400) NULL,
-        PRIMARY KEY (`email`));
+        PRIMARY KEY (`user_id`));

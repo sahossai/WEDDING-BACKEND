@@ -5,6 +5,7 @@ const dbconnection = require("../../../db-connection/db-connect");
 const response = require("../../../response/success");
 const statusCode = require("../../../response/status-code");
 const logger = require("../../../logger").Logger;
+const schema = require('../../../schema/db-schema');
 var user = require('../../../model/user');
 var utility = require('../../../utility/jwt-signin');
 var util = require('../../../utility/util');
@@ -16,7 +17,6 @@ router.post("/", (req, res, next) => {
     console.log('Registration informations :::' + JSON.stringify(req.body));
     logger.info(API + "Request Registration informations : " + JSON.stringify(req.body));
     var email = util.replaceUndefined(req.body.email);
-    var user_id = util.replaceUndefined(req.body.userId);
     var password = util.replaceUndefined(req.body.password);
     var profile_image = util.replaceUndefined(req.body.profile_image);
     var name = util.replaceUndefined(req.body.name);
@@ -24,7 +24,7 @@ router.post("/", (req, res, next) => {
     var address = util.replaceUndefined(req.body.address);
     var provider = util.replaceUndefined(req.body.provider);
     var token = util.replaceUndefined(req.body.token);
-
+    var user_id = util.generateUserId(provider);
 
     if (typeof email === "undefined" || email == "") {
         return res.end(
@@ -46,7 +46,7 @@ router.post("/", (req, res, next) => {
 
 
     //Insert or Update user data into the database
-    var query = "INSERT INTO `true_love`.`user` (`email`, `user_id`, `password`, `profile_image`, `name`, `date_of_birth`, `address`, `provider`, `social_token`) VALUES ("
+    var query = "INSERT INTO `"+schema.dbName+"`.`"+schema.userTable+"` (`email`, `user_id`, `password`, `profile_image`, `name`, `date_of_birth`, `address`, `provider`, `social_token`) VALUES ("
         + "'" + email + "'" + ","
         + "'" + user_id + "'" + ","
         + "'" + password + "'" + ","
@@ -64,7 +64,7 @@ router.post("/", (req, res, next) => {
         checkIfUserAlreadyExist(email, status => {
             // console.log('User status ====== :::::::::: ' + status);
             if (status) {//User Already Registered. Update old data with new data.
-                query = "UPDATE `true_love`.`user` SET "
+                query = "UPDATE `"+schema.dbName+"`.`"+schema.userTable+"` SET "
                     + "`user_id` = " + "'" + user_id + "'" + ", "
                     + "`password` = " + "'" + password + "'" + ", "
                     + "`profile_image` = " + "'" + profile_image + "'" + ", "
@@ -95,14 +95,14 @@ function executeQuery(query, email, res) {
             logger.info(API + " User Registration Data insert successfully with email " + email);
             // Get user info from table and return it as a response.
             //Just like user login response
-            var query = "SELECT * FROM user WHERE email = '" + email + "'";
+            var query = "SELECT * FROM "+schema.userTable+" WHERE email = '" + email + "'";
             dbconnection.query(query, function (err, result, fields) {
                 if (err) {
                     logger.error(API + " DB Fetch Error: " + JSON.stringify(err));
                     res.end(JSON.stringify(response.genericResponse(statusCode.dbInsertErrorCode, "An error occured while fetching into DB!")));
                 }
                 if (result && result.length > 0) {
-                    utility.createJWTToken({ email: email }, (isSuccess, token) => {
+                    utility.createJWTToken({ user_id: result[0].user_id }, (isSuccess, token) => {
                         if (isSuccess) {
                               res.end(
                                 JSON.stringify(response.genericResponse(statusCode.successStatusCode,"Registration Success!", getUser(result, token)))
@@ -156,7 +156,7 @@ function getUser(result, token) {
 }
 
 function checkIfUserAlreadyExist(email, callback) {
-    var query = "SELECT * FROM user WHERE email = '" + email + "'";
+    var query = "SELECT * FROM "+schema.userTable+" WHERE email = '" + email + "'";
     dbconnection.query(query, function (err, result, fields) {
         if (err) {
             logger.error(API + " DB Fetch Error: " + JSON.stringify(err));

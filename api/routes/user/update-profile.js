@@ -4,6 +4,7 @@ const dbconnection = require("../../../db-connection/db-connect");
 const logger = require("../../../logger").Logger;
 const response = require("../../../response/success");
 const statusCode = require("../../../response/status-code");
+const schema = require('../../../schema/db-schema');
 var user = require('../../../model/user');
 var verifyJWTToken = require('../../../utility/jwt-verify');
 var util = require('../../../utility/util');
@@ -36,7 +37,7 @@ router.post("/", verifyJWTToken, (req, res, next) => {
   }
 
   // Sanity Check End
-  var query = "UPDATE `true_love`.`user` SET "
+  var query = "UPDATE `"+schema.dbName+"`.`"+schema.userTable+"` SET "
     + "`password` = " + "'" + password + "'" + ", "
     + "`profile_image` = " + "'" + profile_image + "'" + ", "
     + "`name` = " + "'" + name + "'" + ", "

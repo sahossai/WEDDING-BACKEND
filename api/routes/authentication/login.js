@@ -5,6 +5,7 @@ const dbconnection = require("../../../db-connection/db-connect");
 const logger = require("../../../logger").Logger;
 const response = require("../../../response/success");
 const statusCode = require("../../../response/status-code");
+const schema = require('../../../schema/db-schema');
 var user = require('../../../model/user');
 var utility = require('../../../utility/jwt-signin');
 
@@ -27,7 +28,7 @@ router.post("/", (req, res, next) => {
     );
   }
 
-  var query = "SELECT * FROM user WHERE email = '" + email + "'" + " AND password = '" + pass + "'";
+  var query = "SELECT * FROM "+schema.userTable+" WHERE email = '" + email + "'" + " AND password = '" + pass + "'";
   // logger.info(API + "login query : " + query);
   //console.log("query::::: " + query);
   dbconnection.query(query, function (err, result, fields) {
@@ -38,7 +39,7 @@ router.post("/", (req, res, next) => {
       );
     }
     if (result && result.length > 0) {
-      utility.createJWTToken({ email: email }, (isSuccess, token) => {
+      utility.createJWTToken({ user_id: result[0].user_id }, (isSuccess, token) => {
         if (isSuccess) {
               res.end(
                 JSON.stringify(response.genericResponse(statusCode.successStatusCode,"Login Success!", getUser(result, token)))
